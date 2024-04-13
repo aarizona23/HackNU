@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'textwrap',
     'webdriver_manager',
     'rest_framework',
+    'opencv-python',
+    'pillow',
 ]
 
 MIDDLEWARE = [
