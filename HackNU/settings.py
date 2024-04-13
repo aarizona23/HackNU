@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'HackNU.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydatabase',
+        'NAME': 'BankCashback',
         'USER': 'arianasadyr',
         'PASSWORD': 'Arizona2003',
         'HOST': 'localhost',

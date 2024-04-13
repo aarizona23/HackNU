@@ -26,6 +26,7 @@ class CashbackOffer(models.Model):
     offerID = models.AutoField(primary_key=True)
     bank_name = models.CharField(max_length=100)
     category = models.CharField(max_length=50)  # Restaurants, Supermarkets, etc.
+    company = models.CharField(max_length=100)  # Specific company or brand
     percentage = models.DecimalField(max_digits=5, decimal_places=2)  # Cashback percentage
     criteria = models.ForeignKey('Criteria', on_delete=models.CASCADE, null=True, blank=True)  # Optional foreign key to Criteria model
     valid_from = models.DateField()  # Date when offer starts

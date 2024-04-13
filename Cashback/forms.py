@@ -73,7 +73,7 @@ class BankCardForm(forms.ModelForm):
         super(BankCardForm, self).__init__(*args, **kwargs)
 
         self.fields['bank_name'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['card_type'].widget = forms.Select(attrs={'class': 'form-control'})  # Add the Select widget with 'form-control' class
+        self.fields['card_type'].widget = forms.Select(attrs={'class': 'form-control'}, choices = BankCard.CARD_CHOICES)  # Add the Select widget with 'form-control' class
         self.fields['card_number'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['expire_date'].widget = forms.DateInput(attrs = {'class' : 'form-control'})
+        self.fields['expire_date'].widget = forms.DateInput(attrs = {'class' : 'form-control'}, format='%m/%d/%Y')
         

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% if user.is_authenticated %}
+    <h1>My Cards</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Card Number</th>
+                <th>Card Type</th>
+                <th>Card Provider</th>
+                <th>Card Expiry</th>
+                <th>Card CVV</th>
+                <th>Card Holder</th>
+                <th>Card Balance</th>
+                <th>Card Cashback</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for card in cards %}
+                <tr>
+                    <td>{{ card.card_number }}</td>
+                    <td>{{ card.card_type }}</td>
+                    <td>{{ card.card_provider }}</td>
+                    <td>{{ card.card_expiry }}</td>
+                    <td>{{ card.card_cvv }}</td>
+                    <td>{{ card.card_holder }}</td>
+                    <td>{{ card.card_balance }}</td>
+                    <td>{{ card.card_cashback }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'add_cards' %}">Add Cards</a>
+{% else %}
+    <h1>My Cards</h1>
+    <p>You are not logged in. Please <a href="{% url 'login' %}">login</a> to view your cards.</p>
+{% endif %}
+
+{% endblock %}
