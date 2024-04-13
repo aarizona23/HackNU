@@ -263,4 +263,41 @@ def get_cashbacks(request, category, company_name, purchase_amount):
     (cashback.criteria.bank_type is None or cashback.criteria.bank_type == card_type)):
                 optimals.append(cashback)
     return render(request, 'optimal_cashbacks.html', {'cashbacks': optimals})
+
+@login_required
+def cashback_form(request):
+    if request.method == 'POST':
+        purchase_amount = request.POST.get('purchase_amount')
+        category = request.POST.get('item_category')
+        company_name = request.POST.get('company_name')
+        return redirect('get_cashbacks', category=category, company_name=company_name, purchase_amount=purchase_amount)
+    return JsonResponse({'message': 'Welcome to the main page'})
+
+@login_required
+def get_card_cashbacks(request, category, company_name, purchase_amount):
+    user = request.user
+    cards = BankCard.objects.filter(user=user)
+    bank_names = [card.bank_name for card in cards]
+    optimals = []
+    cashbacks = CashbackOffer.objects.filter(category=category, company=company_name)
+    for cashback in cashbacks:
+        if cashback.bank_name in bank_names:
+            card_type = BankCard.objects.get(bank_name=cashback.bank_name).card_type
+            if ((cashback.criteria.min_purchase_amount is None or int(cashback.criteria.min_purchase_amount) <= purchase_amount) and
+                    (cashback.criteria.bank_type is None or cashback.criteria.bank_type == card_type)):
+                optimals.append({
+                    'bank_name': cashback.bank_name,
+                    'category': cashback.category,
+                    'percentage': str(cashback.percentage),
+                    'valid_from': cashback.valid_from.strftime('%Y-%m-%d') if cashback.valid_from else None,
+                    'valid_to': cashback.valid_to.strftime('%Y-%m-%d') if cashback.valid_to else None,
+                    'company': cashback.company,
+                    'min_purchase_amount': str(cashback.criteria.min_purchase_amount) if cashback.criteria.min_purchase_amount else None,
+                    'payment_method': cashback.criteria.payment_method,
+                    'days_of_week': cashback.criteria.days_of_week,
+                    'bank_type': cashback.criteria.bank_type
+                })
+
+    return JsonResponse({'cashbacks': optimals})
+
         

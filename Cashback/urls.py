@@ -10,11 +10,12 @@ urlpatterns = [
     path('login/', views.logining, name='login'),
     path('add_cards/', views.add_cards, name='add_cards'),
     path('my_cards/', views.my_cards, name='my_cards'),
+    path('get_cashbacks/<str:category>/<str:company_name>/<int:purchase_amount>/', views.get_cashbacks, name='get_cashbacks'),
     path('register_user/', views.register_user, name='register_user'),
     path('login_user/', views.login_user, name='login_user'),
     path('add_user_cards/', views.add_user_cards, name='add_user_cards'),
     path('user_cards/', views.user_cards, name='user_cards'),
-    path('get_cashbacks/<str:category>/<str:company_name>/<int:purchase_amount>/', views.get_cashbacks, name='get_cashbacks'),
+    path('get_card_cashbacks/<str:category>/<str:company_name>/<int:purchase_amount>/', views.get_card_cashbacks, name='get_card_cashbacks'),
     path('logout/', views.logout, name='logout'),
 ]
 if settings.DEBUG:
