@@ -1,3 +1,4 @@
+import json
 from xml.etree.ElementTree import tostring
 import api
 from selenium import webdriver
@@ -9,6 +10,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import nltk
 from nltk.tokenize import sent_tokenize
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 special_words = ["билеты", "супермаркеты", "кафе", "рестораны", "доставка еды", "доставка", "еды", "одежда", "обувь", "товары для детей", "товары", "детей", "такси", "салоны красоты", "салоны", "красоты",
                  "косметика", "кино", "музыка", "фитнес", "spa", "мебель", "игровые сервисы", "игровые","медицинские услуги", "медицинские", "путешествия", "питомцы", "образование"]
@@ -65,6 +68,17 @@ def get_text(refs):
     return ret
 
 def get_cashback_map():
+    try:
+        # Try importing a component that requires a specific NLTK package
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        # If not found, download it
+        print("Downloading 'punkt'...")
+        nltk.download('punkt')
+        print("'punkt' downloaded successfully.")
+    else:
+        print("'punkt' package is already installed.")
+
     refs = parse_refs("https://jusan.kz/faq/bank/cashback-bonus/bon-prog", "faq-questions_faq_accordion_item__G9bcV", "https://jusan.kz/faq/bank/cashback-bonus/bon-prog/")
 
     text = get_text(refs)
@@ -82,4 +96,25 @@ def get_cashback_map():
 
     joined_string = ' '.join(filtered_sentences)
 
-    print(api.make_map(joined_string))
+    return api.make_map(joined_string)
+
+def get_cashbacks(map):
+    utc_plus_5_time = datetime.now(timezone.utc).astimezone(ZoneInfo('Asia/Ashgabat')).date().__str__()
+    cashbacks = []
+
+    for key, value in map.items():
+        tmp = {
+            'bank_name' : 'Jusan',
+            'category' : key.lower(),
+            'percentage' : value.lower(),
+            'valid_from' : utc_plus_5_time
+        }
+        cashbacks.append(tmp)
+    
+    return cashbacks
+
+def get_data():
+    data = get_cashbacks(get_cashback_map())
+    json_string = json.dumps(data, indent=4, ensure_ascii=False)
+
+    return json_string
