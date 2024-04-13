@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Add Cards</h1>
+    <form method="post" action="{% url 'add_cards' %}">
+        {% csrf_token %}
+        <h3>Card Information</h3>
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success" name="add_cards">Submit Card</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Cashback Request</h1>
+
+<form method="post" action="{% url 'main_page' %}">
+    {% csrf_token %}
+
+    <h3>Purchase Details</h3>
+
+    <div class="form-group">
+        <label for="purchase_amount">За сколько желаете купить:</label>
+        <input type="number" class="form-control" id="purchase_amount" name="purchase_amount" placeholder="Введите сумму" required>
+    </div>
+
+    <div class="form-group">
+        <label for="item_category">Выберите:</label>
+        <select class="form-control" id="item_category" name="item_category" required>
+            <option value="">Select Category</option>
+            <option value="telephones_gadgets">Телефоны и гаджеты</option>
+            <option value="computers">Компьютеры</option>
+            <option value="baby_products">Детские товары</option>
+            <option value="beauty_health">Красота и здоровье</option>
+            <option value="accessories">Аксессуары</option>
+            <option value="jewelry">Украшения</option>
+            <option value="home_garden_products">Товары для дома и дачи</option>
+            <option value="furniture">Мебель</option>
+            <option value="construction_repair">Строительство и ремонт</option>
+            <option value="stationery">Канцелярские товары</option>
+            <option value="products">Продукты</option>
+            <option value="pharmacy">Аптека</option>
+            <option value="tv_audio_video">ТВ, аудио, видео</option>
+            <option value="home_appliances">Бытовая техника</option>
+            <option value="auto_products">Автотовары</option>
+            <option value="sports_tourism">Спорт и туризм</option>
+            <option value="shoes">Обувь</option>
+            <option value="clothes">Одежда</option>
+            <option value="leisure_books">Досуг и книги</option>
+            <option value="pet_products">Товары для животных</option>
+            <option value="gifts_holidays">Подарки и товары для праздников</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="company_name">Название Компании:</label>
+        <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Введите название компании" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Найти кэшбеки!</button>
+</form>
+
+{% endblock %}
