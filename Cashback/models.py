@@ -27,10 +27,10 @@ class CashbackOffer(models.Model):
     bank_name = models.CharField(max_length=100)
     category = models.CharField(max_length=50)  # Restaurants, Supermarkets, etc.
     company = models.CharField(max_length=100, null=True)  # Specific company or brand
-    percentage = models.DecimalField(max_digits=5, decimal_places=2)  # Cashback percentage
+    percentage = models.CharField(max_length=50, blank=True)  # Cashback percentage
     criteria = models.ForeignKey('Criteria', on_delete=models.CASCADE, null=True, blank=True)  # Optional foreign key to Criteria model
-    valid_from = models.DateField(null=True)  # Date when offer starts
-    valid_to = models.DateField(null=True, blank=True)  # Optional end date for the offer
+    valid_from = models.CharField(null=True)  # Date when offer starts
+    valid_to = models.CharField(null=True, blank=True)  # Optional end date for the offer
     
 class Criteria(models.Model):
     PAYMENT_METHOD_CHOICES = (
@@ -39,7 +39,7 @@ class Criteria(models.Model):
     ('SAMSUNG_PAY', 'Samsung Pay')
 )
     criteriaID = models.AutoField(primary_key=True)
-    min_purchase_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Minimum purchase amount for cashback
+    min_purchase_amount = models.CharField(max_length=50, null=True, blank=True)  # Minimum purchase amount for cashback
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True)  # Payment method required for cashback
     days_of_week = models.CharField(max_length=50, null=True, blank=True)  # Days of the week when cashback is available
     bank_type = models.CharField(max_length=50, null=True, blank=True)  # Type of bank card required for cashback

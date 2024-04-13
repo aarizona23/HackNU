@@ -103,7 +103,7 @@ def get_cashbacks(map):
     return cashbacks
 
 def get_data():
-    data = get_cashbacks(get_json())
+    data = get_json()
     json_string = json.dumps(data, indent=4, ensure_ascii=False)
 
     return json_string

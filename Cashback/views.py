@@ -1,4 +1,12 @@
 from django.shortcuts import render, redirect
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+
+from django.http import HttpResponse
 import requests
 import json
 from django.http import JsonResponse
@@ -9,8 +17,9 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from .models import BankCard, CashbackOffer, Criteria
 from .parsing import parse_func
+from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
-import decimal
+import decimal as d
 
 # Create your views here.'
 @login_required
@@ -21,6 +30,54 @@ def main_page(request):
         company_name = request.POST.get('company_name')
         return redirect('get_cashbacks', category=category, company_name=company_name, purchase_amount=purchase_amount)
     return render(request, 'cashbacks.html')
+
+def register_user(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+@login_required
+def add_user_cards(request):
+    if request.method == 'POST':
+        form = BankCardForm(request.POST)
+        if form.is_valid():
+            card = form.save(user=request.user)
+            card.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+def login_user(request):
+    if request.method == 'POST':
+        form = CustomLoginForm(request.POST)
+        if form.is_valid():
+            user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+            if user is not None:
+                login(request, user)
+                return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'errors': 'Invalid credentials'}, status=400)
+
+@login_required
+def user_cards(request):
+    user = request.user
+    cards = user.bankcard_set.all()
+    # Serialize cards if needed
+    serialized_cards = [{'number': card.number, 'expiry_date': card.expiry_date} for card in cards]
+    return JsonResponse({'cards': serialized_cards})
+
+@login_required
+def user_logout(request):
+    logout(request)
+    return JsonResponse({'success': True})
 
 def registerUser(request):
     if request.method == 'POST':
@@ -50,7 +107,6 @@ def add_cards(request):
     return render(request, 'add_cards.html', {'form': form})
 
 def logining(request):
-    save_cashbacks(request)
     if request.method == 'POST':
         form = CustomLoginForm(request.POST)
         if form.is_valid():
@@ -96,7 +152,7 @@ def dictionary_of_categories(request):
     category_names = dict()
     product_names = ('супермаркеты', 'продукты', 'продуктовые магазины', 'продуктовые')
     food_names = ('рестораны', 'фастфуд', 'кафе', 'ресторан', 'фудкорты', 'фудкорт', 'фудкорта')
-    entertainment_names = ('кинотеатры', 'развлечения', 'развлекательные центры', 'развлекательные', 'кино', 'кинотеатр', 'досуг и книги')
+    entertainment_names = ('кинотеатры', 'развлечения', 'развлекательные центры', 'развлекательные', 'кино', 'кинотеатр', 'кино и музыка онлайн', 'досуг и книги')
     tech_names = ('электроника', 'техника', 'техники', 'технические магазины', 'технические')
     telephony_names = ('телефоны', 'мобильная связь', 'мобильные операторы', 'мобильные', 'наушники', 'гарнитуры')
     transport_names = ('транспорт', 'такси', 'транспортные компании', 'транспортные')
@@ -117,6 +173,7 @@ def dictionary_of_categories(request):
     accessories_names = ('аксессуары', 'аксессуары', 'аксессуары для телефонов', 'аксессуары для телефонов', 'аксессуары для компьютеров', 'аксессуары для компьютеров')
     travel_names = ('туризм', 'туристические агентства', 'туристические', 'туристические товары', 'туристические товары')
     celebration_names = ('праздники', 'праздничные товары', 'праздничные', 'праздничные товары')
+    other_names = ('другое', 'другие товары', 'другие')
     
     category_names['products'] = product_names
     category_names['food'] = food_names
@@ -141,6 +198,7 @@ def dictionary_of_categories(request):
     category_names['accessories'] = accessories_names
     category_names['travel'] = travel_names
     category_names['celebration'] = celebration_names
+    category_names['other'] = other_names
     return category_names
 
 def get_category(request, category):
@@ -151,24 +209,43 @@ def get_category(request, category):
     return None
 
 def save_cashbacks(request):
-    json_data = parse_func()
-    cashbacks = json.loads(json_data)
+    cashbacks = parse_func()
+    
     for cashback in cashbacks:
-        bank_name = str(cashback['bank_name'])
-        valid_from = cashback['valid_from'].date()
-        percentage = decimal.Decimal(cashback['percentage'])
-        category = get_category(request, cashback['category'])
-        valid_from = decimal.Decimal(cashback['min_purchase_amount'])
-        company = str(cashback['company'])
-        min_purchase_amount = cashback['min_purchase_amount']
-        valid_to = cashback['valid_to']
-        payment_method = cashback['payment_method']
-        days_of_week = cashback['days_of_week']
-        bank_type = cashback['bank_type']
-        criterias = Criteria(min_purchase_amount=min_purchase_amount, payment_method=payment_method, days_of_week=days_of_week, bank_type=bank_type)
-        criterias.save()
-        offer = CashbackOffer(bank_name=bank_name, category=category, percentage=percentage, valid_from=valid_from, valid_to=valid_to, company=company, criteria=criterias)
-        offer.save()
+        try:
+            # Check if the CashbackOffer already exists with the same details
+            cat = get_category(request, cashback['category'])
+            offer = CashbackOffer.objects.get(
+                bank_name=cashback['bank_name'],
+                category=cat,
+                company=cashback['company'],
+                percentage=cashback['percentage'],
+                valid_from=cashback['valid_from'],
+                valid_to=cashback['valid_to'],
+            )
+            print("Offer already exists:", offer)
+        except ObjectDoesNotExist:
+            # Create new Criteria object
+            criteria = Criteria.objects.create(
+                min_purchase_amount=cashback['min_purchase_amount'],
+                payment_method=cashback['payment_method'],
+                days_of_week=cashback['days_of_week'],
+                bank_type=cashback['bank_type']
+            )
+            
+            # Create new CashbackOffer object
+            cat = get_category(request, cashback['category'])
+            offer = CashbackOffer.objects.create(
+                bank_name=cashback['bank_name'],
+                category=cat,
+                company=cashback['company'],
+                percentage=cashback['percentage'],
+                valid_from=cashback['valid_from'],
+                valid_to=cashback['valid_to'],
+                criteria=criteria
+            )
+            print("New offer created:", offer)
+
         
 @login_required        
 def get_cashbacks(request, category, company_name, purchase_amount):
@@ -180,7 +257,10 @@ def get_cashbacks(request, category, company_name, purchase_amount):
     for cashback in cashbacks:
         if cashback.bank_name in bank_names:
             card_type = BankCard.objects.get(bank_name=cashback.bank_name).card_type
-            if cashback.criteria.min_purchase_amount <= purchase_amount or cashback.criteria.min_purchase_amount is None and cashback.criteria.bank_type is None or cashback.criteria.bank_type == card_type:
+            if (((cashback.criteria.min_purchase_amount is not None and 
+    int(cashback.criteria.min_purchase_amount) <= purchase_amount) or \
+   (cashback.criteria.min_purchase_amount is None)) and 
+    (cashback.criteria.bank_type is None or cashback.criteria.bank_type == card_type)):
                 optimals.append(cashback)
-    return render(request, 'cashbacks.html', {'cashbacks': optimals})
+    return render(request, 'optimal_cashbacks.html', {'cashbacks': optimals})
         

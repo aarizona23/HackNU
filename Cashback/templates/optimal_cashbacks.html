@@ -5,8 +5,11 @@
 <p>Here are the optimal cashbacks for each user:</p>
 
 <table>
-  {% for cashback in cashbacks.items() %}
+  {% for cashback in cashbacks %}
   <tr>
     <td>{{ cashback }}</td>
   </tr>
-{% endfor %}
+    {% endfor %}
+</table>
+    
+    {% endblock %}
