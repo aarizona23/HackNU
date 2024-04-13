@@ -69,34 +69,28 @@ def get_text(refs):
 
 def get_cashback_map():
     try:
-        # Try importing a component that requires a specific NLTK package
         nltk.data.find('tokenizers/punkt')
     except LookupError:
-        # If not found, download it
-        print("Downloading 'punkt'...")
         nltk.download('punkt')
-        print("'punkt' downloaded successfully.")
     else:
-        print("'punkt' package is already installed.")
+        refs = parse_refs("https://jusan.kz/faq/bank/cashback-bonus/bon-prog", "faq-questions_faq_accordion_item__G9bcV", "https://jusan.kz/faq/bank/cashback-bonus/bon-prog/")
 
-    refs = parse_refs("https://jusan.kz/faq/bank/cashback-bonus/bon-prog", "faq-questions_faq_accordion_item__G9bcV", "https://jusan.kz/faq/bank/cashback-bonus/bon-prog/")
+        text = get_text(refs)
 
-    text = get_text(refs)
+        sentences = []
 
-    sentences = []
+        for i in text:
+            a = sent_tokenize(i, language='russian')
+            sentences = sentences + a
 
-    for i in text:
-        a = sent_tokenize(i, language='russian')
-        sentences = sentences + a
+        filtered_sentences = [
+            sentence for sentence in sentences
+            if any(word.lower() in sentence.lower() for word in special_words)
+        ]
 
-    filtered_sentences = [
-        sentence for sentence in sentences
-        if any(word.lower() in sentence.lower() for word in special_words)
-    ]
+        joined_string = ' '.join(filtered_sentences)
 
-    joined_string = ' '.join(filtered_sentences)
-
-    return api.make_map(joined_string)
+        return api.make_map(joined_string)
 
 def get_cashbacks(map):
     utc_plus_5_time = datetime.now(timezone.utc).astimezone(ZoneInfo('Asia/Ashgabat')).date().__str__()
