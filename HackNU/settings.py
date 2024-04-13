@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Cashback'
+    'Cashback',
+    'betterforms',
+    'crispy_forms'
 ]
 
 MIDDLEWARE = [
@@ -126,6 +128,7 @@ STATIC_URL = 'static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
+
 AUTH_USER_MODEL = "Cashback.User"
 
 # Default primary key field type

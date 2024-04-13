@@ -3,19 +3,23 @@ from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 class User(AbstractUser):
-    userID = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
-    surname = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)  # Using email instead of gmail for clarity
     address = models.CharField(max_length=255)
     telephone = models.CharField(max_length=20)
     
 class BankCard(models.Model):
+    CARD_CHOICES = (
+    ('VISA CLASSIC', 'Visa Classic'),
+    ('VISA GOLD', 'Visa Gold'),
+    ('VISA PLATINUM', 'Visa Platinum'),
+    ('MASTERCARD STANDARD', 'Mastercard Standard'),
+    ('MASTERCARD GOLD', 'Mastercard Gold'),
+    ('MASTERCARD PLATINUM', 'Mastercard Platinum'),
+)
     cardID = models.AutoField(primary_key=True)
     bank_name = models.CharField(max_length=100)
-    card_type = models.CharField(max_length=50)  # Debit, Credit, etc.
+    card_type = models.CharField(max_length=50, choices=CARD_CHOICES, blank=True)  # Debit, Credit, etc.
     card_number = models.CharField(max_length=16)  # Consider using a masked field for security
-    expiry_date = models.DateField()
+    expire_date = models.DateField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)  # Links to User model
     
 class CashbackOffer(models.Model):

@@ -2,27 +2,55 @@ from django.shortcuts import render, redirect
 import requests
 import json
 from django.http import JsonResponse
-from .forms import CustomUserCreationForm, BankCardForm
-
+from .forms import CustomUserCreationForm, BankCardForm, CustomLoginForm
+from .models import User
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.'
 def run_page(request):
     print("hi")
     return render(request, 'main.html')
 
-def register(request):
-  if request.method == 'POST':
-    user_form = UserRegistrationForm(request.POST)
-    bank_card_form = BankCardForm(request.POST)  # Create a BankCardForm instance
-    if user_form.is_valid() and bank_card_form.is_valid():
-      user = user_form.save()
-      # Save the first bank card after creating the user
-      bank_card_form.instance.user = user  # Set the user for the bank card
-      bank_card_form.save()
-      # Optionally handle additional bank cards using another BankCardForm instance
-      # ... (see explanation below)
-      return redirect('run_page')  # Redirect to success page
-  else:
-    user_form = UserRegistrationForm()
-    bank_card_form = BankCardForm()  # Create an empty BankCardForm instance
-  return render(request, 'register.html', {'user_form': user_form, 'bank_card_form': bank_card_form})
+def registerUser(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('registerCards')
+        else:
+            return render(request, 'register.html', {'form': form})
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'register.html', {'form': form})
+
+@login_required
+def add_cards(request):
+    if request.method == 'POST':
+        form = BankCardForm(request.POST)
+        if form.is_valid():
+            card = form.save(user=request.user)
+            card.save()
+            return redirect('run_page')
+        else:
+            return render(request, 'register_cards.html', {'form': form})
+    else:
+        form = BankCardForm()
+    return render(request, 'register_cards.html', {'form': form})
+
+def login(request):
+    if request.method == 'POST':
+        form = CustomLoginForm(request.POST)
+        if form.is_valid():
+            user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                return render(request, 'login.html', {'form': form})
+        else:
+            return render(request, 'login.html', {'form': form})
+    else:
+        form = CustomLoginForm()
+    return render(request, 'login.html', {'form': form})
