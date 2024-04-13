@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Optimal Cashback</h1>
+<p>Here are the optimal cashbacks for each user:</p>
+
+<table>
+  {% for cashback in cashbacks.items() %}
+  <tr>
+    <td>{{ cashback }}</td>
+  </tr>
+{% endfor %}

@@ -1,6 +1,6 @@
 import json
 from xml.etree.ElementTree import tostring
-import api
+import Cashback.Adapters.Jusan.api2 as api2
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -90,7 +90,7 @@ def get_cashback_map():
 
         joined_string = ' '.join(filtered_sentences)
 
-        return api.make_map(joined_string)
+        return api2.make_map(joined_string)
 
 def get_cashbacks(map):
     utc_plus_5_time = datetime.now(timezone.utc).astimezone(ZoneInfo('Asia/Ashgabat')).date()
@@ -103,8 +103,12 @@ def get_cashbacks(map):
             'category' : key.lower(),
             'percentage' : value.lower(),
             'valid_from' : ""+utc_plus_5_time.day+utc_plus_5_time.month+utc_plus_5_time.year,
-            'company_name' : 'unknown'
-
+            'company' : None,
+            'min_purchase_amount': None,
+            'valid_to': None, 
+            'payment_method': None,
+            'days_of_week': None,
+            'bank_type': None
         }
         cashbacks.append(tmp)
     

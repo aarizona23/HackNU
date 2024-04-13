@@ -39,7 +39,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Cashback',
     'betterforms',
-    'crispy_forms'
+    'selenium',
+    'nltk',
+    'google',
+    'google.generativeai',
+    'google.generativeai.models',
+    'xml.etree.ElementTree',
+    'pathlib',
+    'json',
+    'os',
+    'IPython',
+    'datetime',
+    'zoneinfo',
+    'textwrap',
+    'webdriver_manager',
 ]
 
 MIDDLEWARE = [

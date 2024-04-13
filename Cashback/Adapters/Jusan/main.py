@@ -1,6 +1,5 @@
-import json
 from xml.etree.ElementTree import tostring
-import api
+import Cashback.Adapters.Jusan.api2 as api2
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,8 +9,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import nltk
 from nltk.tokenize import sent_tokenize
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 
 special_words = ["билеты", "супермаркеты", "кафе", "рестораны", "доставка еды", "доставка", "еды", "одежда", "обувь", "товары для детей", "товары", "детей", "такси", "салоны красоты", "салоны", "красоты",
                  "косметика", "кино", "музыка", "фитнес", "spa", "мебель", "игровые сервисы", "игровые","медицинские услуги", "медицинские", "путешествия", "питомцы", "образование"]
@@ -52,10 +49,10 @@ def get_text(refs):
             driver.get(url)
 
             WebDriverWait(driver, 20).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div[class="border-b border-gray-100 pb-6 mb-6 content-inner-editer"]'))
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div[itemprop="text"]'))
             )
 
-            text_divs = driver.find_elements(By.CSS_SELECTOR, 'div[class="border-b border-gray-100 pb-6 mb-6 content-inner-editer"]')
+            text_divs = driver.find_elements(By.CSS_SELECTOR, 'div[itemprop="text"]')
 
             for div in text_divs:
                 tmp = div.text
@@ -67,40 +64,22 @@ def get_text(refs):
 
     return ret
 
-def get_json():
-    try:
-        nltk.data.find('tokenizers/punkt')
-    except LookupError:
-        nltk.download('punkt')
-    else:
-        refs = parse_refs("https://halykbank.kz/promo", "lazy", "https://halykbank.kz/promo/")
-        
-        text = get_text(refs)
+def get_cashback_map():
+    refs = parse_refs("https://jusan.kz/faq/bank/cashback-bonus/bon-prog", "faq-questions_faq_accordion_item__G9bcV", "https://jusan.kz/faq/bank/cashback-bonus/bon-prog/")
 
-        joined_string = ' '.join(text)
+    text = get_text(refs)
 
-        return api.make_map(joined_string)
+    sentences = []
 
-def get_cashbacks(map):
-    utc_plus_5_time = datetime.now(timezone.utc).astimezone(ZoneInfo('Asia/Ashgabat')).date().__str__()
-    cashbacks = []
+    for i in text:
+        a = sent_tokenize(i, language='russian')
+        sentences = sentences + a
 
-    for key, value in map.items():
-        tmp = {
-            'bank_name' : 'Jusan',
-            'category' : key.lower(),
-            'percentage' : value.lower(),
-            'valid_from' : utc_plus_5_time,
-            'company_name' : 'unknown'
-        }
-        cashbacks.append(tmp)
-    
-    return cashbacks
+    filtered_sentences = [
+        sentence for sentence in sentences
+        if any(word.lower() in sentence.lower() for word in special_words)
+    ]
 
-def get_data():
-    data = get_json()
-    json_string = json.dumps(data, indent=4, ensure_ascii=False)
+    joined_string = ' '.join(filtered_sentences)
 
-    return json_string
-
-print(get_data())
+    print(api2.make_map(joined_string))
