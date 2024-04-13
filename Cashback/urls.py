@@ -7,3 +7,5 @@ urlpatterns = [
     # ... other URL patterns ...
     path('', views.run_page, name='run_page'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

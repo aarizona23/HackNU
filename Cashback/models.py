@@ -1,7 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
-class User(models.Model):
+class User(AbstractUser):
     userID = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
@@ -28,11 +29,18 @@ class CashbackOffer(models.Model):
     limitations = models.ManyToManyField('Limitations', blank=True)  # ManyToMany relationship with Limitations model
     
 class Criteria(models.Model):
+    PAYMENT_METHOD_CHOICES = (
+    ('APPLE_PAY', 'Apple Pay'),
+    ('GOOGLE_PAY', 'Google Pay'),
+    ('SAMSUNG_PAY', 'Samsung Pay'),
+    ('DEBIT_CARD', 'Debit Card'),
+)
     criteriaID = models.AutoField(primary_key=True)
     min_purchase_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Minimum purchase amount for cashback
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True)  # Payment method required for cashback
     # Add other criteria fields as needed (e.g., specific products, membership requirements)
     
 class Limitations(models.Model):
     limitationID = models.AutoField(primary_key=True)
-    description = models.CharField(max_length=255)
+    days_of_week = models.CharField(max_length=50, null=True, blank=True)  # Days of the week when the offer is valid
     # Add other fields as needed (e.g., maximum cashback amount, number of transactions)
