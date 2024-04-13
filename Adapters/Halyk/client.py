@@ -52,10 +52,10 @@ def get_text(refs):
             driver.get(url)
 
             WebDriverWait(driver, 20).until(
-                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div[itemprop="text"]'))
+                EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div[class="border-b border-gray-100 pb-6 mb-6 content-inner-editer"]'))
             )
 
-            text_divs = driver.find_elements(By.CSS_SELECTOR, 'div[itemprop="text"]')
+            text_divs = driver.find_elements(By.CSS_SELECTOR, 'div[class="border-b border-gray-100 pb-6 mb-6 content-inner-editer"]')
 
             for div in text_divs:
                 tmp = div.text
@@ -67,34 +67,22 @@ def get_text(refs):
 
     return ret
 
-def get_cashback_map():
+def get_json():
     try:
         nltk.data.find('tokenizers/punkt')
     except LookupError:
         nltk.download('punkt')
     else:
-        refs = parse_refs("https://jusan.kz/faq/bank/cashback-bonus/bon-prog", "faq-questions_faq_accordion_item__G9bcV", "https://jusan.kz/faq/bank/cashback-bonus/bon-prog/")
-
+        refs = parse_refs("https://halykbank.kz/promo", "lazy", "https://halykbank.kz/promo/")
+        
         text = get_text(refs)
 
-        sentences = []
-
-        for i in text:
-            a = sent_tokenize(i, language='russian')
-            sentences = sentences + a
-
-        filtered_sentences = [
-            sentence for sentence in sentences
-            if any(word.lower() in sentence.lower() for word in special_words)
-        ]
-
-        joined_string = ' '.join(filtered_sentences)
+        joined_string = ' '.join(text)
 
         return api.make_map(joined_string)
 
 def get_cashbacks(map):
-    utc_plus_5_time = datetime.now(timezone.utc).astimezone(ZoneInfo('Asia/Ashgabat')).date()
-
+    utc_plus_5_time = datetime.now(timezone.utc).astimezone(ZoneInfo('Asia/Ashgabat')).date().__str__()
     cashbacks = []
 
     for key, value in map.items():
@@ -102,16 +90,17 @@ def get_cashbacks(map):
             'bank_name' : 'Jusan',
             'category' : key.lower(),
             'percentage' : value.lower(),
-            'valid_from' : ""+utc_plus_5_time.day+utc_plus_5_time.month+utc_plus_5_time.year,
+            'valid_from' : utc_plus_5_time,
             'company_name' : 'unknown'
-
         }
         cashbacks.append(tmp)
     
     return cashbacks
 
 def get_data():
-    data = get_cashbacks(get_cashback_map())
+    data = get_json()
     json_string = json.dumps(data, indent=4, ensure_ascii=False)
 
     return json_string
+
+print(get_data())
