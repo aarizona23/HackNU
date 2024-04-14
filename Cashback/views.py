@@ -10,7 +10,7 @@ from django.http import HttpResponse
 import requests
 import json
 from django.http import JsonResponse
-from .forms import CustomUserCreationForm, BankCardForm, CustomLoginForm
+from .forms import CustomUserCreationForm, BankCardForm, CustomLoginForm, UserAdditionalInfoForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
@@ -31,7 +31,7 @@ def main_page(request):
         return redirect('get_cashbacks', category=category, company_name=company_name, purchase_amount=purchase_amount)
     return render(request, 'cashbacks.html')
 
-def register_user(request):
+def registerUser(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -79,18 +79,33 @@ def user_logout(request):
     logout(request)
     return JsonResponse({'success': True})
 
-def registerUser(request):
+def register_user(request):
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('main_page')
+        if 'step' in request.POST:
+            if request.POST['step'] == '1':
+                main_form = CustomUserCreationForm(request.POST)
+                if main_form.is_valid():
+                    # Save the main form data to the session
+                    request.session['main_form_data'] = main_form.cleaned_data
+                    return JsonResponse({'success': True, 'step': 2})
+                else:
+                    return JsonResponse({'success': False, 'errors': main_form.errors}, status=400)
+            elif request.POST['step'] == '2':
+                extra_form = UserAdditionalInfoForm(request.POST)
+                if extra_form.is_valid():
+                    # Merge the main form data from the session with the extra form data
+                    main_form_data = request.session.get('main_form_data', {})
+                    main_form_data.update(extra_form.cleaned_data)
+                    # Create a new user with the merged form data
+                    user = CustomUserCreationForm(main_form_data).save()
+                    login(request, user)
+                    return JsonResponse({'success': True})
+                else:
+                    return JsonResponse({'success': False, 'errors': extra_form.errors}, status=400)
         else:
-            return render(request, 'register.html', {'form': form})
+            return JsonResponse({'error': 'Invalid request'}, status=400)
     else:
-        form = CustomUserCreationForm()
-    return render(request, 'register.html', {'form': form})
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 @login_required
 def add_cards(request):
@@ -297,6 +312,10 @@ def get_card_cashbacks(request, category, company_name, purchase_amount):
                     'days_of_week': cashback.criteria.days_of_week,
                     'bank_type': cashback.criteria.bank_type
                 })
+    for cashback in optimals:
+        if 'percentage' in cashback:
+            cashback['percentage'] = float(cashback['percentage'])
+    optimals.sort(key=lambda x: x.get('percentage', 0), reverse=True)
 
     return JsonResponse({'cashbacks': optimals})
 

@@ -27,29 +27,26 @@ class CustomLoginForm(forms.Form):
         self.fields['password'].widget = forms.PasswordInput(attrs = {'class' : 'form-control'})
 
 class CustomUserCreationForm(UserCreationForm):
-    class Meta:
+    class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'telephone', 'address', 'password1', 'password2')
+        fields = ['email', 'password1', 'password2']
     def save(self, commit=True):
         # Get the instance without saving it to the database
         instance = super().save(commit=False)
+        instance.set_password(self.cleaned_data['password1'])
+        instance.email = self.cleaned_data['email']
+        instance.username = self.cleaned_data['email']
         
         # Save the instance to the database if commit is True
         if commit:
             instance.save()
 
         return instance
-    def __init__(self, *args, **kwargs):
-        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
 
-        self.fields['username'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['first_name'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['last_name'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['telephone'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['email'].widget = forms.EmailInput(attrs = {'class' : 'form-control'})
-        self.fields['address'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['password1'].widget = forms.PasswordInput(attrs = {'class' : 'form-control'})
-        self.fields['password2'].widget = forms.PasswordInput(attrs = {'class' : 'form-control'})
+class UserAdditionalInfoForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'telephone', 'address']
 
 class BankCardForm(forms.ModelForm):
     class Meta:
@@ -68,12 +65,4 @@ class BankCardForm(forms.ModelForm):
             instance.save()
 
         return instance
-    
-    def __init__(self, *args, **kwargs):
-        super(BankCardForm, self).__init__(*args, **kwargs)
-
-        self.fields['bank_name'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['card_type'].widget = forms.Select(attrs={'class': 'form-control'}, choices = BankCard.CARD_CHOICES)  # Add the Select widget with 'form-control' class
-        self.fields['card_number'].widget = forms.TextInput(attrs = {'class' : 'form-control'})
-        self.fields['expire_date'].widget = forms.DateInput(attrs = {'class' : 'form-control'}, format='%m/%d/%Y')
         
