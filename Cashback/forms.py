@@ -29,7 +29,7 @@ class CustomLoginForm(forms.Form):
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ['email', 'password1', 'password2']
+        fields = ['email', 'password1', 'password2', 'first_name', 'last_name', 'telephone', 'address']
     def save(self, commit=True):
         # Get the instance without saving it to the database
         instance = super().save(commit=False)
@@ -42,11 +42,6 @@ class CustomUserCreationForm(UserCreationForm):
             instance.save()
 
         return instance
-
-class UserAdditionalInfoForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'telephone', 'address']
 
 class BankCardForm(forms.ModelForm):
     class Meta:

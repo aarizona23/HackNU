@@ -54,6 +54,10 @@ INSTALLED_APPS = [
     'textwrap',
     'webdriver_manager',
     'rest_framework',
+    'celery',
+    'PIL',
+    'pydrive',
+    'gspread',
 ]
 
 MIDDLEWARE = [
@@ -137,7 +141,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.101.22.185', '10.101.15.2', '10.101.63.255']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
