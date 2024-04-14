@@ -1,0 +1,9 @@
+.cashback_form {
+    display: flex;
+    flex-direction: row;
+}
+
+.cashback_form.input-group {
+    display: flex;
+    flex-direction: column;
+}
