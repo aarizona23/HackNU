@@ -14,21 +14,6 @@ from pathlib import Path
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-from google.oauth2 import service_account
-
-# Read credentials from environmental variables
-SCOPES = [os.getenv('GOOGLE_API_SCOPES', 'https://www.googleapis.com/auth/drive')]
-SERVICE_ACCOUNT_FILE = os.getenv('GOOGLE_SERVICE_ACCOUNT_FILE')
-
-# Check if required environmental variables are set
-if not SCOPES or not SERVICE_ACCOUNT_FILE:
-    raise ValueError("Missing required environmental variables")
-
-# Load credentials from service account file
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-os.environ['GOOGLE_API_SCOPES'] = 'https://www.googleapis.com/auth/drive'
-os.environ['GOOGLE_SERVICE_ACCOUNT_FILE'] = './Cashback/Adapters/cash/sshbot-401810-507d88f6b018.json'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -39,7 +24,7 @@ SECRET_KEY = 'django-insecure-y)^83z%7vs#mfnit02tij+!)v^ls=4lu-a@x14=64n8kcng_k5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['10.101.15.2', '10.101.22.185']
 
 
 # Application definition
@@ -72,6 +57,7 @@ INSTALLED_APPS = [
     'PIL',
     'pydrive',
     'gspread',
+    'oauth2client',
 ]
 
 MIDDLEWARE = [
