@@ -22,7 +22,7 @@ genai.configure(api_key=api_url)
 
 def setup_google_drive_client():
     SCOPES = ['https://www.googleapis.com/auth/drive']
-    SERVICE_ACCOUNT_FILE = './Cashback/Adapters/cash/file.json'
+    SERVICE_ACCOUNT_FILE = './Cashback/Adapters/cash/sshbot-401810-507d88f6b018.json'
 
     credentials = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
