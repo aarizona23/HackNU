@@ -183,7 +183,7 @@ def process_videos_from_drive(folder_id='1UzpUplg-dH1fnyiVOE-keFVT3k5nyT_q',bank
     video_files = list_files_in_folder(drive_service, folder_id)
 
     for video in video_files:
-        file_name = f"/Users/arianasadyr/HackNU/Cashback/Adapters/cash/videos/{video['name']}"
+        file_name = f"./Cashback/Adapters/cash/videos/{video['name']}"
         download_file(drive_service, video['id'], file_name)
         data = get_data(video['name'].split('_')[0], file_name)  # Assuming get_data processes the video and returns JSON
         json_files[video['name'].split('_')[0]] = data
